@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>The World Cup Oracle — Emergency Football Passport</title>
+  <meta name="description" content="Nigeria didn't qualify. So we're issuing emergency football passports. 7 questions. 1 country. 1 prophecy. No appeal court." />
+  <meta property="og:title" content="The World Cup Oracle" />
+  <meta property="og:description" content="Nigeria didn't qualify. Get your emergency football passport." />
+  <meta property="og:type" content="website" />
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #0b1628; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+    #root { min-height: 100vh; }
+    input:focus { outline: none; }
+    button:focus { outline: none; }
+    a { text-decoration: none; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #0b1628; }
+    ::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 2px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+
+// ============================================================
+// ✏️  EDIT YOUR LINKS HERE
+// ============================================================
+const WHATSAPP_LINK = "https://chat.whatsapp.com/REPLACE_WITH_YOUR_LINK";
+const SUPERBRU_LINK  = "https://www.superbru.com/REPLACE_WITH_YOUR_POOL_LINK";
+
+
+// ============================================================
+// ✏️  QUESTIONS — Edit question text, option text, and scores
+//     Scores: add points to any of the 8 countries per answer
+//     Countries: Brazil | Argentina | France | Morocco |
+//                England | Germany | Spain | Portugal
+// ============================================================
+const QUESTIONS = [
+  {
+    id: 1,
+    question: "Nigeria didn't qualify. What was your immediate reaction?",
+    options: [
+      { text: "I cried. Then I started searching for another team to cry for.",          scores: { Brazil: 2, Portugal: 1 } },
+      { text: "I moved on immediately. I am a football pragmatist.",                      scores: { France: 2, Germany: 1 } },
+      { text: "I declared Morocco my team. Africa first. Always.",                        scores: { Morocco: 3 } },
+      { text: "I told everyone Nigeria would qualify and I was wrong. I still believe I was right.", scores: { Argentina: 2, England: 1 } },
+      { text: "I haven't fully accepted it. The grief is ongoing and I am managing.",    scores: { England: 2, Portugal: 1 } },
+    ],
+  },
+  {
+    id: 2,
+    question: "How do you define football loyalty?",
+    options: [
+      { text: "One team. Ride or die. Pain is part of the deal.",                         scores: { England: 2, Argentina: 2 } },
+      { text: "I follow whoever plays the most beautiful football.",                       scores: { Brazil: 2, Spain: 2 } },
+      { text: "I support the team most likely to win. Sentimentality is expensive.",      scores: { Germany: 2, France: 2 } },
+      { text: "African teams only. End of discussion.",                                   scores: { Morocco: 3 } },
+      { text: "I go where the drama is. Chaos over consistency.",                         scores: { Portugal: 2, Argentina: 1 } },
+    ],
+  },
+  {
+    id: 3,
+    question: "How much does African continental pride shape your World Cup allegiance?",
+    options: [
+      { text: "Completely. Africa should win this World Cup. I accept no substitute.",    scores: { Morocco: 3 } },
+      { text: "Heavily. But I also want brilliant, intelligent football.",                scores: { Morocco: 1, Spain: 1, France: 1 } },
+      { text: "It matters, but my heart belongs to a specific non-African team.",         scores: { Brazil: 1, Portugal: 1, Argentina: 1 } },
+      { text: "My African identity and my World Cup team are separate things.",           scores: { Germany: 2, France: 1 } },
+      { text: "I want Morocco to go all the way and rewrite history for the continent.",  scores: { Morocco: 3 } },
+    ],
+  },
+  {
+    id: 4,
+    question: "At its core, what is football?",
+    options: [
+      { text: "Art. Beauty matters more than results.",                                   scores: { Brazil: 2, Spain: 2 } },
+      { text: "War conducted with a ball. Results are everything.",                       scores: { Germany: 2, Argentina: 2 } },
+      { text: "Organised suffering with occasional bursts of joy.",                       scores: { England: 3 } },
+      { text: "Tactics, intelligence, and a well-executed system.",                       scores: { France: 3 } },
+      { text: "Legacy. Individual greatness is the entire point.",                        scores: { Portugal: 3 } },
+    ],
+  },
+  {
+    id: 5,
+    question: "What is your role in the football group chat?",
+    options: [
+      { text: "Long voice notes after every goal. Nobody can stop me.",                   scores: { Brazil: 2, Portugal: 1 } },
+      { text: "I post formations, stats, and tactical threads. I am the analyst.",        scores: { France: 2, Germany: 1 } },
+      { text: "I go completely silent when my team loses. Do not tag me.",                scores: { England: 2, Argentina: 1 } },
+      { text: "I always have the African football angle ready to deploy.",                scores: { Morocco: 2, Spain: 1 } },
+      { text: "I start the Messi vs Ronaldo argument and watch the chat burn.",           scores: { Portugal: 2, Argentina: 2 } },
+    ],
+  },
+  {
+    id: 6,
+    question: "How do you handle football heartbreak?",
+    options: [
+      { text: "I am built for heartbreak. It is the foundation of my football identity.", scores: { England: 3 } },
+      { text: "Every tournament, I believe with my whole chest. Then I believe again.",   scores: { Argentina: 2, England: 1 } },
+      { text: "I analyse what went wrong, identify the tactical errors, and move forward.", scores: { Germany: 2, France: 1 } },
+      { text: "Pain is temporary. Football beauty is eternal. I recover via highlights.", scores: { Brazil: 2, Spain: 1 } },
+      { text: "The narrative demands a different ending this time. I have been hurt before.", scores: { Portugal: 2, Argentina: 1 } },
+    ],
+  },
+  {
+    id: 7,
+    question: "What is your World Cup prophecy style?",
+    options: [
+      { text: "I predicted the winner from the group stage draw. Based purely on data.",  scores: { Germany: 2, France: 2 } },
+      { text: "The spirit of football is preparing something magical. I can feel it.",    scores: { Brazil: 2, Morocco: 1 } },
+      { text: "They will break our hearts again. And I will watch every minute.",         scores: { England: 3 } },
+      { text: "The legacy, the narrative, the moment — it is all aligned. I am certain.", scores: { Portugal: 3 } },
+      { text: "Africa will make history at this tournament. The world is simply not ready.", scores: { Morocco: 3 } },
+    ],
+  },
+];
+
+
+// ============================================================
+// ✏️  COUNTRY RESULTS — Edit descriptions, prophecies,
+//     rival notes, passport labels, and embassy names here
+// ============================================================
+const COUNTRIES = {
+  Brazil: {
+    flag: "🇧🇷",
+    archetype: "The Romantic",
+    embassy: "Embassy of Jogo Bonito",
+    shortDesc: "Your passport has been issued by the Department of Beautiful Suffering.",
+    longDesc: "You believe football should be played the way God intended — with flair, invention, and at least one unnecessary skill move in the penalty box. You have never forgiven 2014 and you never will. You support Brazil because deep down, you believe football should feel like a dance, and the alternative is simply too depressing to consider.",
+    prophecy: "Your World Cup will feature breathtaking individual moments, at least one 'this is their year' speech, and a quarter-final exit that leaves the entire group chat in stunned silence. You will recover. You always recover.",
+    rival: "Germany 🇩🇪",
+    rivalNote: "The wound from 2014 never healed properly. Some rivalries are generational.",
+    passportLabels: ["Samba Embassy Holder", "Jogo Bonito Refugee", "Emotional Carnival Visa", "Certified Romantic on Standby"],
+    accent: "#f59e0b",
+  },
+  Argentina: {
+    flag: "🇦🇷",
+    archetype: "The Believer",
+    embassy: "Embassy of La Albiceleste",
+    shortDesc: "Your passport has been issued by the Office of Stubborn Faith.",
+    longDesc: "You believe. Not naively — but with the kind of conviction that has survived decades of evidence to the contrary. Argentina finally won in 2022 and rather than bring peace, it only deepened your investment. You are in it for the feelings. The vindication. The argument that it was always going to happen.",
+    prophecy: "Your World Cup will involve shouting at a screen, one miraculous comeback, and a group-chat message that begins with 'I SAID IT. I SAID IT FROM THE BEGINNING.'",
+    rival: "Portugal 🇵🇹",
+    rivalNote: "Every Believer knows the real theological dispute is with the fanbase who think their man was the whole point.",
+    passportLabels: ["La Albiceleste Loyalist", "Messi's Last Dance Survivor", "Certified Believer", "Emotional Relapse Pending"],
+    accent: "#38bdf8",
+  },
+  France: {
+    flag: "🇫🇷",
+    archetype: "The Analyst",
+    embassy: "Embassy of Les Bleus",
+    shortDesc: "Your passport has been issued by the Institute of Tactical Intelligence.",
+    longDesc: "You understand football at a structural level. You don't get carried away by emotion because you've already calculated the probability of that emotion being warranted. You support France because they are the most rationally assembled squad in world football, and your brain rewards correct assessments. You just wish the players shared your discipline.",
+    prophecy: "Your World Cup will involve being right about everything, at least one implosion that defies rational analysis, and a post-tournament thread titled 'What Went Wrong: A Breakdown Nobody Asked For.'",
+    rival: "Morocco 🇲🇦",
+    rivalNote: "The Analyst respects the underdog's rise but cannot accept when organised chaos disrupts the spreadsheet.",
+    passportLabels: ["Tactical Intelligence Holder", "Les Bleus Logic Visa", "Certified Football Accountant", "Emotion Risk: Moderate"],
+    accent: "#1d4ed8",
+  },
+  Morocco: {
+    flag: "🇲🇦",
+    archetype: "The African Purist",
+    embassy: "Embassy of the Atlas Lions",
+    shortDesc: "Your passport has been issued by the Pan-African Football Authority.",
+    longDesc: "You are not just watching a football tournament. You are watching history being written — and you intend to be on the right side of it. Morocco's 2022 run changed something in your chest and it hasn't fully gone back. Africa deserves this. The continent has been waiting. Qatar proved it was possible. 2026 is when it becomes inevitable.",
+    prophecy: "Your World Cup will feature collective roaring, a tactical masterclass that leaves pundits speechless, at least one viral celebration, and a group-chat thread: 'They doubted Africa again. They were wrong. Again.'",
+    rival: "France 🇫🇷",
+    rivalNote: "Some rivalries are about football. This one is also about something larger, older, and considerably more important.",
+    passportLabels: ["Atlas Lions Citizen", "African Pride Visa", "Pan-Continental Loyalist", "2026 Is Our Year — Stamp Issued"],
+    accent: "#dc2626",
+  },
+  England: {
+    flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    archetype: "The Masochist",
+    embassy: "Embassy of Perpetual Hope",
+    shortDesc: "Your passport has been issued by the Department of It's Coming Home (Pending).",
+    longDesc: "You have chosen England, and the Oracle respects the commitment. Nobody accidentally ends up here. You were drawn by something darker — the inexplicable compulsion to believe, be betrayed, forgive, and believe again. You have the emotional range of a penalty shootout: euphoric, then devastated, then somehow still alive. The Oracle salutes your resilience.",
+    prophecy: "Your World Cup will feature a brilliant group stage, a brutal knockout exit, at least one penalty situation, and a WhatsApp message at 2am that reads: 'They always do this to us. Every. Single. Time.'",
+    rival: "Spain 🇪🇸",
+    rivalNote: "Spain plays the football England has been trying to play for 60 years. This is not a conversation England is ready to have.",
+    passportLabels: ["Perpetual Hope Holder", "It's Coming Home (Unverified)", "Trauma Bond Visa", "Penalty Shootout Survivor"],
+    accent: "#ef4444",
+  },
+  Germany: {
+    flag: "🇩🇪",
+    archetype: "The Pragmatist",
+    embassy: "Embassy of Efficiency",
+    shortDesc: "Your passport has been issued by the Federal Office of Football Logic.",
+    longDesc: "You do not support Germany because they are glamorous. You support them because they work. You appreciate a well-structured press, a disciplined defensive line, and a goal that arrives at exactly the moment the system demands it. You find romantic football charming but inefficient. The Oracle notes that you are probably also on time to meetings.",
+    prophecy: "Your World Cup will involve a slow start, widespread panic, a brutal tactical pivot at precisely the right moment, and a run to the final stages that feels inevitable in retrospect but terrified everyone along the way.",
+    rival: "Brazil 🇧🇷",
+    rivalNote: "Pragmatism versus Romance. A debate running since 2014 with no resolution in sight.",
+    passportLabels: ["Efficiency Visa", "Federal Football Citizen", "Logic Over Drama Stamp", "Certified Pragmatist On Duty"],
+    accent: "#6b7280",
+  },
+  Spain: {
+    flag: "🇪🇸",
+    archetype: "The Connoisseur",
+    embassy: "Embassy of La Roja",
+    shortDesc: "Your passport has been issued by the Department of Football Aesthetics.",
+    longDesc: "You support Spain because you have taste. Not in a pretentious way — in the way that someone who has eaten proper Nigerian jollof rice cannot go back to mediocre alternatives. You have seen the 2010 World Cup and the tiki-taka era and it ruined everything else for you. You watch football to be genuinely impressed, and Spain impresses you on a molecular level.",
+    prophecy: "Your World Cup will feature beautiful build-up play, one or two results that defy all the beauty, and a group-chat message where you explain to someone why that goal was actually positionally magnificent.",
+    rival: "England 🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    rivalNote: "England wants to be Spain but keeps hiring the wrong philosophers.",
+    passportLabels: ["Connoisseur Visa", "La Roja Aesthetics Holder", "Football Purist Stamp", "Tiki-Taka Legacy Citizen"],
+    accent: "#f59e0b",
+  },
+  Portugal: {
+    flag: "🇵🇹",
+    archetype: "The Legacy Lawyer",
+    embassy: "Siuuu Embassy",
+    shortDesc: "Your passport has been issued by the Ministry of Legacy Affairs.",
+    longDesc: "You say you support Portugal, but the Oracle suspects this is really about one man, one celebration, and one unfinished argument. You are emotionally invested in the idea that football still owes Ronaldo one final World Cup chapter. Logic may disturb you, but it cannot deport you.",
+    prophecy: "Your World Cup will involve loud confidence, sudden panic, unnecessary comparisons, and at least one group-chat argument that begins with 'If Messi did this…'",
+    rival: "Argentina 🇦🇷",
+    rivalNote: "Every Portugal citizen knows the real opponent may not even be on the pitch.",
+    passportLabels: ["Legacy Lawyer", "Ronaldo FC in Diplomatic Clothing", "Siuuu Embassy Applicant", "Pending Emotional Court Case"],
+    accent: "#15803d",
+  },
+};
+
+
+// ============================================================
+// SCORING ENGINE — No need to edit below this line
+// ============================================================
+function calculateResult(answers) {
+  const scores = { Brazil:0, Argentina:0, France:0, Morocco:0, England:0, Germany:0, Spain:0, Portugal:0 };
+  answers.forEach((idx, qIdx) => {
+    const opt = QUESTIONS[qIdx] && QUESTIONS[qIdx].options[idx];
+    if (opt) Object.entries(opt.scores).forEach(([c, p]) => { scores[c] = (scores[c]||0) + p; });
+  });
+  const max = Math.max(...Object.values(scores));
+  const winners = Object.keys(scores).filter(c => scores[c] === max);
+  if (winners.length === 1) return winners[0];
+  const lastOpt = QUESTIONS[QUESTIONS.length-1].options[answers[answers.length-1]];
+  if (lastOpt) for (const c of winners) if (lastOpt.scores[c]) return c;
+  return winners[0];
+}
+
+// ============================================================
+// APP COMPONENT
+// ============================================================
+function App() {
+  const [screen, setScreen]           = React.useState("landing");
+  const [currentQ, setCurrentQ]       = React.useState(0);
+  const [answers, setAnswers]         = React.useState([]);
+  const [result, setResult]           = React.useState(null);
+  const [passportLabel, setLabel]     = React.useState("");
+  const [selected, setSelected]       = React.useState(null);
+  const [animating, setAnimating]     = React.useState(false);
+  const [objection, setObjection]     = React.useState(null);
+  const [showDual, setShowDual]       = React.useState(false);
+  const [declaredFav, setDeclaredFav] = React.useState("");
+
+  function startQuiz() {
+    setScreen("quiz"); setCurrentQ(0); setAnswers([]);
+    setResult(null); setObjection(null);
+    setDeclaredFav(""); setShowDual(false); setSelected(null);
+  }
+
+  function handleAnswer(idx) {
+    if (animating) return;
+    setSelected(idx); setAnimating(true);
+    setTimeout(() => {
+      const next = [...answers, idx];
+      if (currentQ < QUESTIONS.length - 1) {
+        setAnswers(next); setCurrentQ(q => q+1);
+        setSelected(null); setAnimating(false);
+      } else {
+        const country = calculateResult(next);
+        const labels = COUNTRIES[country].passportLabels;
+        setLabel(labels[Math.floor(Math.random()*labels.length)]);
+        setResult(country); setAnswers(next); setScreen("result");
+        setSelected(null); setAnimating(false);
+      }
+    }, 380);
+  }
+
+  function handleObjection(choice) {
+    setObjection(choice); setShowDual(choice === "dual");
+  }
+
+  function restart() {
+    setScreen("landing"); setCurrentQ(0); setAnswers([]);
+    setResult(null); setObjection(null);
+    setDeclaredFav(""); setShowDual(false); setSelected(null);
+  }
+
+  function objectionStatus() {
+    return { accepted:"Accepted ✅", dual:"Dual Citizen 🛂", rejected:"Disputed ❌", chaos:"Ministry of Chaos 🌪️" }[objection] || "Pending";
+  }
+
+  function objectionMsg() {
+    if (objection==="accepted") return "The Oracle is pleased. You have acknowledged your football soul. The passport is confirmed.";
+    if (objection==="dual")     return `Your heart may argue. But your football soul has been documented. Competition identity remains ${result}.`;
+    if (objection==="rejected") return "Rejection noted. The passport remains valid. You cannot deport yourself from your own football soul.";
+    if (objection==="chaos")    return "Chaos acknowledged. The Ministry has been notified. No flags. No borders. Just vibes and group-chat arguments.";
+    return "";
+  }
+
+  // ── LANDING ───────────────────────────────────────────────
+  if (screen === "landing") return (
+    <div style={{minHeight:"100vh",background:"linear-gradient(160deg,#050e1a 0%,#0a2d1a 60%,#0f172a 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem"}}>
+      <div style={{maxWidth:"400px",width:"100%",textAlign:"center"}}>
+
+        <div style={{marginBottom:"1.75rem"}}>
+          <div style={{width:"82px",height:"82px",border:"3px solid #eab308",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 0.75rem",background:"rgba(234,179,8,0.07)",boxShadow:"0 0 32px rgba(234,179,8,0.18)"}}>
+            <span style={{fontSize:"2.4rem"}}>⚽</span>
+          </div>
+          <div style={{color:"#eab308",fontSize:"0.6rem",letterSpacing:"0.26em",fontWeight:700,textTransform:"uppercase"}}>
+            Bureau of Football Destiny · Est. 2026
+          </div>
+        </div>
+
+        <h1 style={{fontSize:"2.6rem",fontWeight:900,color:"white",lineHeight:1.05,margin:"0 0 0.4rem",letterSpacing:"-0.5px"}}>
+          The World Cup<br/>
+          <span style={{color:"#eab308"}}>Oracle</span>
+        </h1>
+
+        <div style={{width:"48px",height:"3px",background:"linear-gradient(90deg,#15803d,#eab308)",margin:"0.9rem auto 1.1rem",borderRadius:"99px"}}/>
+
+        <p style={{color:"#86efac",fontSize:"1.05rem",marginBottom:"0.35rem",fontStyle:"italic",fontWeight:500}}>
+          Nigeria didn't qualify.
+        </p>
+        <p style={{color:"#e2e8f0",fontSize:"1.075rem",marginBottom:"0",lineHeight:1.55}}>
+          So we're issuing <strong style={{color:"#eab308"}}>emergency football passports</strong>.
+        </p>
+
+        <div style={{background:"rgba(255,255,255,0.04)",border:"1px dashed rgba(234,179,8,0.32)",borderRadius:"12px",padding:"1rem 1.25rem",margin:"1.375rem 0",backdropFilter:"blur(4px)"}}>
+          <p style={{color:"#94a3b8",fontSize:"0.88rem",margin:0,lineHeight:1.65}}>
+            7 questions &nbsp;·&nbsp; 1 country &nbsp;·&nbsp; 1 prophecy<br/>
+            <strong style={{color:"#fbbf24"}}>No appeal court.</strong>
+          </p>
+        </div>
+
+        <button onClick={startQuiz} style={{background:"linear-gradient(135deg,#eab308,#f59e0b)",color:"#0a1628",fontWeight:900,fontSize:"1.05rem",padding:"1rem 2rem",borderRadius:"9999px",border:"none",cursor:"pointer",width:"100%",letterSpacing:"0.06em",textTransform:"uppercase",boxShadow:"0 6px 28px rgba(234,179,8,0.32)"}}>
+          🛂 Get My Passport
+        </button>
+
+        <p style={{color:"#1f2937",fontSize:"0.68rem",marginTop:"1.25rem"}}>
+          Issued by the Naija Bureau of Football Destiny · 2026 Edition
+        </p>
+      </div>
+    </div>
+  );
+
+  // ── QUIZ ──────────────────────────────────────────────────
+  if (screen === "quiz") {
+    const q   = QUESTIONS[currentQ];
+    const pct = ((currentQ+1)/QUESTIONS.length)*100;
+    return (
+      <div style={{minHeight:"100vh",background:"#0b1628",display:"flex",flexDirection:"column",fontFamily:"inherit"}}>
+        <div style={{maxWidth:"420px",width:"100%",margin:"0 auto",flex:1,display:"flex",flexDirection:"column",padding:"1.25rem"}}>
+
+          {/* Progress */}
+          <div style={{marginBottom:"1.5rem"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.55rem"}}>
+              <span style={{color:"#64748b",fontSize:"0.68rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:600}}>Oracle Assessment</span>
+              <span style={{color:"#eab308",fontSize:"0.85rem",fontWeight:700}}>{currentQ+1} <span style={{color:"#475569"}}>/</span> {QUESTIONS.length}</span>
+            </div>
+            <div style={{height:"5px",background:"#1e293b",borderRadius:"9999px",overflow:"hidden"}}>
+              <div style={{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#15803d,#eab308)",borderRadius:"9999px",transition:"width 0.4s ease"}}/>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",marginTop:"0.45rem"}}>
+              {QUESTIONS.map((_,i) => (
+                <div key={i} style={{width:"9px",height:"9px",borderRadius:"50%",background:i<currentQ?"#15803d":i===currentQ?"#eab308":"#1e293b",border:i===currentQ?"2px solid #fbbf24":"2px solid transparent",transition:"all 0.3s"}}/>
+              ))}
+            </div>
+          </div>
+
+          {/* Question card */}
+          <div style={{background:"#1a2744",borderRadius:"16px",padding:"1.375rem",marginBottom:"1rem",border:"1px solid #1e3a5f"}}>
+            <div style={{color:"#eab308",fontSize:"0.6rem",fontWeight:700,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:"0.5rem"}}>Question {currentQ+1}</div>
+            <p style={{color:"#f1f5f9",fontSize:"1.05rem",fontWeight:700,lineHeight:1.45,margin:0}}>{q.question}</p>
+          </div>
+
+          {/* Options */}
+          <div style={{display:"flex",flexDirection:"column",gap:"0.6rem",flex:1}}>
+            {q.options.map((opt,i) => {
+              const isSel = selected===i;
+              return (
+                <button key={i} onClick={()=>handleAnswer(i)} disabled={animating}
+                  style={{background:isSel?"rgba(21,128,61,0.22)":"rgba(30,41,59,0.8)",border:`2px solid ${isSel?"#4ade80":"#1e3a5f"}`,borderRadius:"12px",padding:"0.9rem 1.1rem",color:isSel?"#fff":"#cbd5e1",textAlign:"left",cursor:animating?"default":"pointer",fontSize:"0.9rem",lineHeight:1.45,transition:"all 0.2s ease",fontWeight:isSel?600:400,display:"flex",alignItems:"flex-start",gap:"0.625rem"}}>
+                  <span style={{color:"#eab308",fontWeight:800,fontSize:"0.78rem",minWidth:"18px",paddingTop:"1px"}}>
+                    {["A","B","C","D","E"][i]}
+                  </span>
+                  <span>{opt.text}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <p style={{color:"#1e3a5f",fontSize:"0.68rem",textAlign:"center",marginTop:"1.25rem",paddingBottom:"1.5rem"}}>
+            The Oracle is watching. Choose wisely.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── RESULT ────────────────────────────────────────────────
+  if (screen === "result" && result) {
+    const C = COUNTRIES[result];
+    return (
+      <div style={{minHeight:"100vh",background:"#0b1628",padding:"1.25rem 1.25rem 2.5rem",fontFamily:"inherit"}}>
+        <div style={{maxWidth:"420px",width:"100%",margin:"0 auto"}}>
+
+          <div style={{textAlign:"center",marginBottom:"1rem",paddingTop:"0.5rem"}}>
+            <div style={{color:"#eab308",fontSize:"0.6rem",letterSpacing:"0.24em",fontWeight:700,textTransform:"uppercase"}}>
+              ✦ &nbsp; ORACLE JUDGMENT ISSUED &nbsp; ✦
+            </div>
+          </div>
+
+          {/* ── PASSPORT CARD ── */}
+          <div style={{background:"linear-gradient(160deg,#071a10 0%,#0b1628 55%,#0a0e1a 100%)",border:"2px solid #eab308",borderRadius:"20px",padding:"1.5rem",marginBottom:"0.875rem",position:"relative",overflow:"hidden",boxShadow:"0 8px 42px rgba(234,179,8,0.14)"}}>
+
+            {/* decorative rings */}
+            <div style={{position:"absolute",top:"-32px",right:"-32px",width:"120px",height:"120px",border:"2px solid rgba(234,179,8,0.09)",borderRadius:"50%",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",top:"-16px",right:"-16px",width:"75px",height:"75px",border:"2px solid rgba(234,179,8,0.11)",borderRadius:"50%",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",bottom:"-22px",left:"-22px",width:"90px",height:"90px",border:"2px solid rgba(21,128,61,0.09)",borderRadius:"50%",pointerEvents:"none"}}/>
+
+            {/* header row */}
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"1.1rem"}}>
+              <div>
+                <div style={{color:"#eab308",fontSize:"0.57rem",letterSpacing:"0.22em",fontWeight:800,textTransform:"uppercase"}}>Republic of Football</div>
+                <div style={{color:"#4ade80",fontSize:"0.62rem",letterSpacing:"0.08em",marginTop:"1px"}}>Emergency Football Passport</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{color:"#374151",fontSize:"0.57rem"}}>Bureau of Football Destiny</div>
+                <div style={{color:"#374151",fontSize:"0.57rem"}}>Naija Edition · 2026</div>
+              </div>
+            </div>
+
+            {/* flag + country + archetype */}
+            <div style={{textAlign:"center",marginBottom:"1.1rem",padding:"1rem 0.75rem",background:"rgba(0,0,0,0.35)",borderRadius:"14px",border:"1px solid rgba(234,179,8,0.11)"}}>
+              <div style={{fontSize:"3.75rem",lineHeight:1,marginBottom:"0.3rem"}}>{C.flag}</div>
+              <div style={{color:"white",fontSize:"1.75rem",fontWeight:900,letterSpacing:"0.04em",textTransform:"uppercase",marginBottom:"0.4rem"}}>{result}</div>
+              <div style={{display:"inline-block",background:"#eab308",color:"#0a1628",fontSize:"0.7rem",fontWeight:800,padding:"3px 14px",borderRadius:"9999px",textTransform:"uppercase",letterSpacing:"0.1em"}}>{C.archetype}</div>
+            </div>
+
+            {/* data fields */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.75rem"}}>
+              {[
+                {label:"Oracle Passport", value:result,        color:"#eab308"},
+                {label:"Official Embassy",value:C.embassy,     color:"#4ade80"},
+                {label:"Natural Rival",   value:C.rival,       color:"#f87171"},
+                {label:"Passport Status", value:passportLabel, color:"#c084fc"},
+              ].map((f,i) => (
+                <div key={i} style={{background:"rgba(0,0,0,0.25)",borderRadius:"8px",padding:"0.6rem 0.7rem"}}>
+                  <div style={{color:"#475569",fontSize:"0.56rem",letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:"2px"}}>{f.label}</div>
+                  <div style={{color:f.color,fontSize:"0.74rem",fontWeight:700,lineHeight:1.35}}>{f.value}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* objection status row */}
+            {objection && (
+              <div style={{display:"grid",gridTemplateColumns:objection==="dual"&&declaredFav?"1fr 1fr":"1fr",gap:"0.6rem",marginBottom:"0.75rem"}}>
+                <div style={{background:"rgba(0,0,0,0.25)",borderRadius:"8px",padding:"0.6rem 0.7rem"}}>
+                  <div style={{color:"#475569",fontSize:"0.56rem",letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:"2px"}}>Objection Status</div>
+                  <div style={{color:"#fbbf24",fontSize:"0.74rem",fontWeight:700}}>{objectionStatus()}</div>
+                </div>
+                {objection==="dual" && declaredFav && (
+                  <div style={{background:"rgba(0,0,0,0.25)",borderRadius:"8px",padding:"0.6rem 0.7rem"}}>
+                    <div style={{color:"#475569",fontSize:"0.56rem",letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:"2px"}}>Declared Favourite</div>
+                    <div style={{color:"#c084fc",fontSize:"0.74rem",fontWeight:700}}>{declaredFav}</div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* oracle stamp */}
+            <div style={{display:"flex",justifyContent:"flex-end",marginTop:"0.4rem"}}>
+              <div style={{border:"2px solid rgba(234,179,8,0.32)",borderRadius:"6px",padding:"3px 8px",transform:"rotate(-7deg)"}}>
+                <div style={{color:"#eab308",fontSize:"0.56rem",fontWeight:800,letterSpacing:"0.12em"}}>ORACLE CERTIFIED</div>
+                <div style={{color:"#4b5563",fontSize:"0.5rem",textAlign:"center",letterSpacing:"0.08em"}}>2026 · NAIJA EDITION</div>
+              </div>
+            </div>
+          </div>
+          {/* ── END PASSPORT CARD ── */}
+
+          {/* Oracle assessment */}
+          <div style={{background:"#111827",borderRadius:"16px",padding:"1.2rem",marginBottom:"0.75rem",border:"1px solid #1e3a5f"}}>
+            <div style={{color:"#eab308",fontSize:"0.6rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:700,marginBottom:"0.5rem"}}>Oracle Assessment</div>
+            <p style={{color:"#94a3b8",fontSize:"0.875rem",lineHeight:1.7,margin:0}}>{C.longDesc}</p>
+          </div>
+
+          {/* Prophecy */}
+          <div style={{background:"linear-gradient(135deg,#12253a,#0b1628)",borderRadius:"16px",padding:"1.2rem",marginBottom:"0.75rem",border:"1px solid rgba(234,179,8,0.38)"}}>
+            <div style={{color:"#eab308",fontSize:"0.6rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:700,marginBottom:"0.5rem"}}>⚡ Your World Cup Prophecy</div>
+            <p style={{color:"#f1f5f9",fontSize:"0.9rem",fontStyle:"italic",lineHeight:1.7,margin:0}}>"{C.prophecy}"</p>
+          </div>
+
+          {/* Natural rival */}
+          <div style={{background:"#111827",borderRadius:"16px",padding:"1.1rem",marginBottom:"1.25rem",border:"1px solid #1e3a5f"}}>
+            <div style={{color:"#f87171",fontSize:"0.6rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:700,marginBottom:"0.4rem"}}>⚔️ Natural Rival: {C.rival}</div>
+            <p style={{color:"#6b7280",fontSize:"0.85rem",lineHeight:1.55,margin:0}}>{C.rivalNote}</p>
+          </div>
+
+          {/* ── OBJECTIONS ── */}
+          <div style={{background:"#111827",borderRadius:"16px",padding:"1.25rem",marginBottom:"1rem",border:"1px solid #1e3a5f"}}>
+            <div style={{color:"#a78bfa",fontSize:"0.6rem",letterSpacing:"0.18em",textTransform:"uppercase",fontWeight:700,marginBottom:"0.2rem"}}>Any Objections?</div>
+            <p style={{color:"#4b5563",fontSize:"0.8rem",marginBottom:"1rem",fontStyle:"italic",lineHeight:1.55}}>
+              "Your heart may argue. But your football soul has been documented."
+            </p>
+            <div style={{display:"flex",flexDirection:"column",gap:"0.5rem"}}>
+              {[
+                {key:"accepted",label:"✅  I accept my passport",         color:"#15803d"},
+                {key:"dual",    label:"🛂  I accept dual citizenship",    color:"#7c3aed"},
+                {key:"rejected",label:"❌  I reject this passport",       color:"#dc2626"},
+                {key:"chaos",   label:"🌪️  I support chaos, not countries",color:"#f59e0b"},
+              ].map(opt => (
+                <button key={opt.key} onClick={()=>handleObjection(opt.key)}
+                  style={{background:objection===opt.key?opt.color+"20":"transparent",border:`1.5px solid ${objection===opt.key?opt.color:"#1e3a5f"}`,borderRadius:"10px",padding:"0.75rem 1rem",color:objection===opt.key?"#f1f5f9":"#6b7280",textAlign:"left",cursor:"pointer",fontSize:"0.875rem",fontWeight:objection===opt.key?600:400,transition:"all 0.2s"}}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {/* dual citizenship input */}
+            {objection==="dual" && showDual && (
+              <div style={{marginTop:"1rem"}}>
+                <label style={{color:"#d1d5db",fontSize:"0.8rem",display:"block",marginBottom:"0.5rem"}}>
+                  Declare your favourite country (emotional):
+                </label>
+                <input type="text" value={declaredFav} onChange={e=>setDeclaredFav(e.target.value)}
+                  placeholder="e.g. Senegal, Italy, Ghana, Brazil..."
+                  style={{width:"100%",background:"#0b1628",border:"1.5px solid #7c3aed",borderRadius:"8px",padding:"0.75rem",color:"white",fontSize:"0.9rem",outline:"none"}}/>
+                {declaredFav && (
+                  <p style={{color:"#a78bfa",fontSize:"0.78rem",marginTop:"0.5rem",fontStyle:"italic",lineHeight:1.55}}>
+                    Dual citizenship noted. Oracle Passport: <strong>{result}</strong>. Declared favourite: <strong>{declaredFav}</strong>. Competition identity remains {result}. The Oracle maintains jurisdiction.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* objection response */}
+            {objection && (
+              <div style={{marginTop:"1rem",padding:"0.75rem",background:"rgba(0,0,0,0.25)",borderRadius:"8px",borderLeft:"3px solid #4ade80"}}>
+                <p style={{color:"#86efac",fontSize:"0.8rem",lineHeight:1.6,margin:0,fontStyle:"italic"}}>{objectionMsg()}</p>
+              </div>
+            )}
+          </div>
+
+          {/* ── CTAs ── */}
+          <div style={{display:"flex",flexDirection:"column",gap:"0.75rem",marginBottom:"1rem"}}>
+            <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer"
+              style={{display:"block",background:"linear-gradient(135deg,#15803d,#16a34a)",color:"white",fontWeight:700,fontSize:"0.9375rem",padding:"1rem",borderRadius:"12px",textAlign:"center",boxShadow:"0 4px 22px rgba(21,128,61,0.32)"}}>
+              💬 &nbsp;Join Your Embassy on WhatsApp
+            </a>
+            <a href={SUPERBRU_LINK} target="_blank" rel="noopener noreferrer"
+              style={{display:"block",background:"linear-gradient(135deg,#1d4ed8,#2563eb)",color:"white",fontWeight:700,fontSize:"0.9375rem",padding:"1rem",borderRadius:"12px",textAlign:"center",boxShadow:"0 4px 22px rgba(29,78,216,0.3)"}}>
+              🏆 &nbsp;Defend Your Embassy on Superbru
+            </a>
+            <button style={{background:"linear-gradient(135deg,#eab308,#f59e0b)",color:"#0a1628",fontWeight:800,fontSize:"0.9375rem",padding:"1rem",borderRadius:"12px",border:"none",cursor:"pointer",boxShadow:"0 4px 22px rgba(234,179,8,0.32)"}}>
+              📸 &nbsp;Screenshot This Passport &amp; Post in the Group
+            </button>
+          </div>
+
+          {/* Restart */}
+          <div style={{textAlign:"center"}}>
+            <button onClick={restart}
+              style={{background:"transparent",border:"1.5px solid #1e3a5f",color:"#475569",padding:"0.7rem 2rem",borderRadius:"9999px",cursor:"pointer",fontSize:"0.875rem"}}>
+              🔄 &nbsp;Restart — Try Another Passport
+            </button>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+// ── MOUNT ──────────────────────────────────────────────────
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
+</script>
+</body>
+</html>
