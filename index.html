@@ -7,6 +7,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lightweight GA4 tracking for Oracle app -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-B1YHE8FRLV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-B1YHE8FRLV');
+  </script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -23,6 +31,87 @@
 const COUNTRIES=['Brazil','Argentina','Senegal','Germany','England','Spain','Portugal','France'];
 const WHATSAPP_LINKS={Brazil:'https://chat.whatsapp.com/DKL5wQ47UUd4p7pxOaEJwH',Argentina:'https://chat.whatsapp.com/DKL5wQ47UUd4p7pxOaEJwH',France:'https://chat.whatsapp.com/DKL5wQ47UUd4p7pxOaEJwH',Senegal:'https://chat.whatsapp.com/DKL5wQ47UUd4p7pxOaEJwH',England:'https://chat.whatsapp.com/DKL5wQ47UUd4p7pxOaEJwH',Germany:'https://chat.whatsapp.com/DKL5wQ47UUd4p7pxOaEJwH',Spain:'https://chat.whatsapp.com/DKL5wQ47UUd4p7pxOaEJwH',Portugal:'https://chat.whatsapp.com/DKL5wQ47UUd4p7pxOaEJwH'};
 const TOURNAMENT_LINK='https://REPLACE_ME';
+const TRACKING_CONFIG={
+  ga4MeasurementId:'G-B1YHE8FRLV',
+  sheetEndpoint:'PASTE_WEB_APP_URL_HERE',
+  sheetToken:'PASTE_SECRET_TOKEN_HERE'
+};
+function getStoredAttribution(){
+  const key='oracle_attribution_v1';
+  try{
+    const existing=JSON.parse(localStorage.getItem(key)||'null');
+    const params=new URLSearchParams(window.location.search);
+    const incoming={
+      utm_source:params.get('utm_source')||'',
+      utm_medium:params.get('utm_medium')||'',
+      utm_campaign:params.get('utm_campaign')||''
+    };
+    const hasIncoming=!!(incoming.utm_source||incoming.utm_medium||incoming.utm_campaign);
+    if(!existing){
+      const saved={
+        ...incoming,
+        referrer:document.referrer||'',
+        landing_url:window.location.href,
+        first_seen_at:new Date().toISOString()
+      };
+      localStorage.setItem(key,JSON.stringify(saved));
+      return saved;
+    }
+    if(hasIncoming && !(existing.utm_source||existing.utm_medium||existing.utm_campaign)){
+      const merged={...existing,...incoming};
+      localStorage.setItem(key,JSON.stringify(merged));
+      return merged;
+    }
+    return existing;
+  }catch(e){
+    return {utm_source:'',utm_medium:'',utm_campaign:'',referrer:document.referrer||'',landing_url:window.location.href,first_seen_at:''};
+  }
+}
+const ORACLE_ATTRIBUTION=getStoredAttribution();
+function browserInfo(){return `${navigator.platform||'unknown'} | ${navigator.userAgent||'unknown'}`;}
+function eventPayload(eventName,extra={}){
+  return {
+    event_type:eventName,
+    timestamp:new Date().toISOString(),
+    assigned_country:extra.assigned_country||extra.country||'',
+    utm_source:ORACLE_ATTRIBUTION.utm_source||'',
+    utm_medium:ORACLE_ATTRIBUTION.utm_medium||'',
+    utm_campaign:ORACLE_ATTRIBUTION.utm_campaign||'',
+    referrer:ORACLE_ATTRIBUTION.referrer||document.referrer||'',
+    device_browser:browserInfo(),
+    ...extra
+  };
+}
+function logCompletionToSheet(payload){
+  const endpoint=TRACKING_CONFIG.sheetEndpoint;
+  if(!endpoint || endpoint.includes('PASTE_WEB_APP_URL_HERE')) return;
+  const body=JSON.stringify({token:TRACKING_CONFIG.sheetToken,...payload});
+  try{
+    if(navigator.sendBeacon){
+      const blob=new Blob([body],{type:'text/plain;charset=UTF-8'});
+      navigator.sendBeacon(endpoint,blob);
+    }else{
+      fetch(endpoint,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body,keepalive:true}).catch(()=>{});
+    }
+  }catch(e){}
+}
+function trackEvent(eventName,extra={}){
+  try{
+    const payload=eventPayload(eventName,extra);
+    if(typeof gtag==='function'){
+      gtag('event',eventName,{
+        assigned_country:payload.assigned_country,
+        timestamp:payload.timestamp,
+        utm_source:payload.utm_source,
+        utm_medium:payload.utm_medium,
+        utm_campaign:payload.utm_campaign,
+        referrer:payload.referrer,
+        device_browser:payload.device_browser
+      });
+    }
+    if(eventName==='oracle_complete') logCompletionToSheet(payload);
+  }catch(e){}
+}
 const ASSETS={
   hero:'Savvy Oracle.png',
   brazil:'stamp-brazil.png',
@@ -55,16 +144,16 @@ const shuffle=a=>{const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floo
 function balancedMatrix(){const counts=Object.fromEntries(COUNTRIES.map(c=>[c,3]));const rows=[];function fill(r){if(r===6)return true;let candidates=shuffle(COUNTRIES.filter(c=>counts[c]>0));function combo(start,pick){if(pick.length===4){pick.forEach(c=>counts[c]--);rows[r]=shuffle(pick);if(fill(r+1))return true;pick.forEach(c=>counts[c]++);return false}for(let i=start;i<candidates.length;i++){if(counts[candidates[i]]>0&&combo(i+1,[...pick,candidates[i]]))return true}return false}return combo(0,[])}fill(0);return rows}
 function makeSession(){const selected=QUESTION_BANK.map(slot=>slot[Math.floor(Math.random()*slot.length)]);const matrix=balancedMatrix();return selected.map((question,i)=>({...question,shown:shuffle(matrix[i].map(c=>question.options.find(o=>o.country===c)))}));}
 function App(){const [screen,setScreen]=React.useState('landing'),[questions,setQuestions]=React.useState(()=>makeSession()),[idx,setIdx]=React.useState(0),[scores,setScores]=React.useState(Object.fromEntries(COUNTRIES.map(c=>[c,0]))),[winner,setWinner]=React.useState(null),[tied,setTied]=React.useState([]),[tieQ,setTieQ]=React.useState(null),[accepted,setAccepted]=React.useState(false),[dual,setDual]=React.useState(''),[showAppeal,setShowAppeal]=React.useState(false),[dualMode,setDualMode]=React.useState(false),[copied,setCopied]=React.useState(false);
-function reset(){setQuestions(makeSession());setIdx(0);setScores(Object.fromEntries(COUNTRIES.map(c=>[c,0])));setWinner(null);setTied([]);setTieQ(null);setAccepted(false);setDual('');setShowAppeal(false);setDualMode(false);setCopied(false);setScreen('question')}
+function reset(){trackEvent('retake_click',{assigned_country:winner||''});setQuestions(makeSession());setIdx(0);setScores(Object.fromEntries(COUNTRIES.map(c=>[c,0])));setWinner(null);setTied([]);setTieQ(null);setAccepted(false);setDual('');setShowAppeal(false);setDualMode(false);setCopied(false);setScreen('question')}
 function answer(country){const ns={...scores,[country]:scores[country]+1};setScores(ns);if(idx<5){setIdx(idx+1);return}setScreen('calculating');setTimeout(()=>finish(ns),900)}
-function finish(ns){const max=Math.max(...COUNTRIES.map(c=>ns[c]));const tops=COUNTRIES.filter(c=>ns[c]===max);if(tops.length>1){setTied(tops);setTieQ(TIE_BREAKERS[Math.floor(Math.random()*TIE_BREAKERS.length)]);setScreen('tie')}else{setWinner(tops[0]);setScreen('result')}}
-function share(){const r=RESULTS[winner];const msg=`The World Cup Oracle has stamped me: ${r.flag} ${winner} — ${r.persona}. Passport No: ${r.passportCode}`+(dual?` Declared Favourite: ${dual}.`:'.');if(navigator.share){navigator.share({title:'My World Cup Oracle Passport',text:msg}).catch(()=>{});}else{navigator.clipboard.writeText(msg);setCopied(true)}}
+function finish(ns){const max=Math.max(...COUNTRIES.map(c=>ns[c]));const tops=COUNTRIES.filter(c=>ns[c]===max);if(tops.length>1){setTied(tops);setTieQ(TIE_BREAKERS[Math.floor(Math.random()*TIE_BREAKERS.length)]);setScreen('tie')}else{trackEvent('result_country',{assigned_country:tops[0]});trackEvent('oracle_complete',{assigned_country:tops[0]});setWinner(tops[0]);setScreen('result')}}
+function share(){trackEvent('share_passport_click',{assigned_country:winner||''});const r=RESULTS[winner];const msg=`The World Cup Oracle has stamped me: ${r.flag} ${winner} — ${r.persona}. Passport No: ${r.passportCode}`+(dual?` Declared Favourite: ${dual}.`:'.');if(navigator.share){navigator.share({title:'My World Cup Oracle Passport',text:msg}).catch(()=>{});}else{navigator.clipboard.writeText(msg);setCopied(true)}}
 const Shell=({children,cls=''})=><div className="app"><div className="blob b1"/><div className="blob b2"/><div className="blob b3"/><div className={'screen '+cls}>{children}</div></div>;
-if(screen==='landing')return <Shell cls="landing"><img onClick={()=>setScreen('question')} className="hero" src={ASSETS.hero} alt="The World Cup Oracle Passport"/></Shell>;
+if(screen==='landing')return <Shell cls="landing"><img onClick={()=>{trackEvent('oracle_start');setScreen('question')}} className="hero" src={ASSETS.hero} alt="The World Cup Oracle Passport"/></Shell>;
 if(screen==='question'){const qu=questions[idx];return <Shell><div className="progressLabel">PASSPORT APPLICATION {idx+1}/6</div><div className="progressTrack"><div className="progressFill" style={{width:`${((idx+1)/6)*100}%`}} /></div><div className="questionCard"><div className="ministry">MINISTRY QUESTION</div>{qu.intro&&<div className="questionIntro">{qu.intro}</div>}<h1 className="questionText">{qu.question||qu.text}</h1><div className="options">{qu.shown.map((o,i)=><button className="option" key={i} onClick={()=>answer(o.country)}><span className="optionLabel">Option {String.fromCharCode(65+i)}</span><span className="optionText">{o.text}</span></button>)}</div></div></Shell>}
 if(screen==='calculating')return <Shell cls="calc"><div className="spinner"/><h2>THE MINISTRY IS STAMPING...</h2><p className="small">Do not refresh. Your football soul is under review.</p></Shell>;
-if(screen==='tie')return <Shell cls="tie"><div className="questionCard"><div className="ministry">MINISTRY QUESTION</div><div className="tieCopy">Your answers are giving signals that are confusing the Oracle. The Ministry requires one final answer. Choose carefully.</div>{tieQ.intro&&<div className="questionIntro">{tieQ.intro}</div>}<h1 className="questionText">{tieQ.question||tieQ.text}</h1><div className="options">{tieQ.options.filter(o=>tied.includes(o.country)).map((o,i)=><button className="option" key={i} onClick={()=>{setWinner(o.country);setScreen('result')}}><span className="optionLabel">Option {String.fromCharCode(65+i)}</span><span className="optionText">{o.text}</span></button>)}</div></div></Shell>;
-if(screen==='result'){const r=RESULTS[winner];return <Shell><div className="resultCard"><img className="stamp" src={r.stampSrc} alt={`${winner} passport stamp`}/>{dual&&<div className="dualBadge"><div className="dualBadgeTitle">DUAL CITIZENSHIP APPROVED</div><div className="dualBadgeCountry"><span className="dualBadgeFlag">{flagFor(dual)}</span><span className="dualBadgeLabel">Declared Favourite:</span><span className="dualBadgeName">{dual}</span></div><div className="dualBadgeNote">Your official passport remains unchanged</div></div>}</div>{!accepted&&<><div className="actions"><button className="btn green" onClick={()=>setAccepted(true)}>ACCEPT MY PASSPORT</button><button className="btn outlineRed" onClick={()=>setShowAppeal(true)}>I OBJECT — APPEAL THIS RESULT</button></div>{showAppeal&&<div className="appealPanel"><p>Your objection has been noted by the Ministry.</p><p>However, the Oracle does not issue refunds. You have two options:</p><div className="ctaPanel"><button className="btn deep" onClick={reset}>RETAKE THE TEST</button><button className="btn green" onClick={()=>setDualMode(true)}>ACCEPT DUAL CITIZENSHIP INSTEAD</button></div>{dualMode&&<div className="dualBox"><div className="dualLabel">Declare your emotional allegiance (this does not change your Oracle Passport)</div><select className="select" value={dual} onChange={e=>{setDual(e.target.value); if(e.target.value){setAccepted(true);setShowAppeal(false);}}}><option value="">Choose emotional favourite</option>{ALL_48.map(c=><option key={c} value={c}>{flagFor(c)} {c}</option>)}</select></div>}</div>}</>}{accepted&&<div className="ctaPanel"><button className="btn green" onClick={()=>window.open(WHATSAPP_LINKS[winner],'_blank')}>JOIN YOUR EMBASSY WHATSAPP GROUP</button><button className="btn deep" onClick={share}>SHARE MY PASSPORT</button>{copied&&<div className="copyNote">Share copy copied to clipboard.</div>}<button className="textLink" onClick={reset}>Retake the Test</button></div>}</Shell>}
+if(screen==='tie')return <Shell cls="tie"><div className="questionCard"><div className="ministry">MINISTRY QUESTION</div><div className="tieCopy">Your answers are giving signals that are confusing the Oracle. The Ministry requires one final answer. Choose carefully.</div>{tieQ.intro&&<div className="questionIntro">{tieQ.intro}</div>}<h1 className="questionText">{tieQ.question||tieQ.text}</h1><div className="options">{tieQ.options.filter(o=>tied.includes(o.country)).map((o,i)=><button className="option" key={i} onClick={()=>{trackEvent('result_country',{assigned_country:o.country});trackEvent('oracle_complete',{assigned_country:o.country});setWinner(o.country);setScreen('result')}}><span className="optionLabel">Option {String.fromCharCode(65+i)}</span><span className="optionText">{o.text}</span></button>)}</div></div></Shell>;
+if(screen==='result'){const r=RESULTS[winner];return <Shell><div className="resultCard"><img className="stamp" src={r.stampSrc} alt={`${winner} passport stamp`}/>{dual&&<div className="dualBadge"><div className="dualBadgeTitle">DUAL CITIZENSHIP APPROVED</div><div className="dualBadgeCountry"><span className="dualBadgeFlag">{flagFor(dual)}</span><span className="dualBadgeLabel">Declared Favourite:</span><span className="dualBadgeName">{dual}</span></div><div className="dualBadgeNote">Your official passport remains unchanged</div></div>}</div>{!accepted&&<><div className="actions"><button className="btn green" onClick={()=>setAccepted(true)}>ACCEPT MY PASSPORT</button><button className="btn outlineRed" onClick={()=>setShowAppeal(true)}>I OBJECT — APPEAL THIS RESULT</button></div>{showAppeal&&<div className="appealPanel"><p>Your objection has been noted by the Ministry.</p><p>However, the Oracle does not issue refunds. You have two options:</p><div className="ctaPanel"><button className="btn deep" onClick={reset}>RETAKE THE TEST</button><button className="btn green" onClick={()=>setDualMode(true)}>ACCEPT DUAL CITIZENSHIP INSTEAD</button></div>{dualMode&&<div className="dualBox"><div className="dualLabel">Declare your emotional allegiance (this does not change your Oracle Passport)</div><select className="select" value={dual} onChange={e=>{setDual(e.target.value); if(e.target.value){setAccepted(true);setShowAppeal(false);}}}><option value="">Choose emotional favourite</option>{ALL_48.map(c=><option key={c} value={c}>{flagFor(c)} {c}</option>)}</select></div>}</div>}</>}{accepted&&<div className="ctaPanel"><button className="btn green" onClick={()=>{trackEvent('whatsapp_click',{assigned_country:winner||''});window.open(WHATSAPP_LINKS[winner],'_blank')}}>JOIN YOUR EMBASSY WHATSAPP GROUP</button><button className="btn deep" onClick={share}>SHARE MY PASSPORT</button>{copied&&<div className="copyNote">Share copy copied to clipboard.</div>}<button className="textLink" onClick={reset}>Retake the Test</button></div>}</Shell>}
 }
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script></body></html>
